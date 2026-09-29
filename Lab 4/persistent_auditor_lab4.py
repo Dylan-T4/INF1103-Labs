@@ -1,5 +1,3 @@
-default_order_id = 1001
-
 def get_valid_input(order_id):
     current_orders = []
     while True:
@@ -33,6 +31,7 @@ def get_valid_input(order_id):
         print("\nNew Order Added:")
         print(f"{order_id} | {item_name} | {stock_quantity}\n")
         order_id += 1
+        print("Order Has Been Saved To orders.txt\n")
 
         print("Current Orders:")
         for past_order_id, item_name, stock_quantity in current_orders:
@@ -42,6 +41,7 @@ def get_valid_input(order_id):
 def load_inventory():
     file_path = "orders.txt"
     order_count = 0
+    default_order_id = 1001
     try:
         with open(file_path, 'r') as file:
             print("Transaction History Found, Printing.")
