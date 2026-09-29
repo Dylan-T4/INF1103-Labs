@@ -1,6 +1,7 @@
 default_order_id = 1001
 
 def get_valid_input(order_id):
+    current_orders = []
     while True:
         while True:
             item_name = input("Enter Product Name: ").strip()
@@ -25,12 +26,18 @@ def get_valid_input(order_id):
         if stock_quantity == "quit":
             print("Exiting Inventory Manager...")
             break
-        
+
+        current_orders.append([order_id, item_name, stock_quantity])
+        save_inventory(order_id, item_name, stock_quantity)
+
         print("\nNew Order Added:")
         print(f"{order_id} | {item_name} | {stock_quantity}\n")
         order_id += 1
 
-
+        print("Current Orders:")
+        for past_order_id, item_name, stock_quantity in current_orders:
+            print(f"{past_order_id} | {item_name} | {stock_quantity}")
+        print()
 
 def load_inventory():
     file_path = "orders.txt"
@@ -53,6 +60,12 @@ def load_inventory():
         open(file_path, 'a')
 
     return default_order_id + order_count
+
+def save_inventory(order_id, item_name, stock_quantity):
+    file_path = "orders.txt"
+    with open(file_path, 'a') as file:
+        file.write(f"{order_id} | {item_name} | {stock_quantity}\n")
+
 
 
 
