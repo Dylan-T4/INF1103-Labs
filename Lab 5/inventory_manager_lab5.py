@@ -1,5 +1,5 @@
 def get_valid_input(order_id):
-    current_orders = []
+    current_orders = {}
     while True:
         while True:
             item_name = input("Enter Product Name: ").strip()
@@ -25,17 +25,17 @@ def get_valid_input(order_id):
             print("Exiting Inventory Manager...")
             break
 
-        current_orders.append([order_id, item_name, stock_quantity])
-        save_inventory(order_id, item_name, stock_quantity)
+        current_orders[order_id]={"product": item_name, "quantity": check_quantity}
+        save_inventory(order_id, item_name, check_quantity)
 
         print("\nNew Order Added:")
-        print(f"{order_id} | {item_name} | {stock_quantity}\n")
+        print(f"{order_id} | {item_name} | {check_quantity}\n")
         order_id += 1
         print("Order Has Been Saved To orders.txt\n")
 
         print("Current Orders:")
-        for past_order_id, item_name, stock_quantity in current_orders:
-            print(f"{past_order_id} | {item_name} | {stock_quantity}")
+        for past_order_id, details in current_orders.items():
+            print(f"{past_order_id} | {details['product']} | {details['quantity']}")
         print()
 
 def load_inventory():
