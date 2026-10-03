@@ -4,5 +4,17 @@
         "name": "Cake",
         "price": 25.0,
         "stock": 2
+    },
+    {
+        "id": "P1003",
+        "name": "Tomato",
+        "price": 2.0,
+        "stock": 1201
+    },
+    {
+        "id": "P1009",
+        "name": "Cake But Better",
+        "price": 403.0,
+        "stock": 5
     }
 ]
