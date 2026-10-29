@@ -1,28 +1,37 @@
 import json
 import os
 
+from product_class import Product
+from inventory_class import Inventory
+
 inventory_file = "inventory.json"
 
-# File Handling
+# File Loading/Saving
 def load_inventory(filename=inventory_file):
+    inventory = Inventory()
+
     if not os.path.exists(filename):
         print(f"{filename} not found. Starting with an empty inventory.")
-        return []
+        return inventory
 
     print(f"{filename} found.")
     try:
         with open(filename, "r", encoding="utf-8") as file:
-            inventory = json.load(file)
+            data = json.load(file)
+        loaded = Inventory()
+        for item in data:
+            loaded.add_product(Product.from_dict(item))
         print("Inventory loaded successfully.")
-        return inventory
-    except json.JSONDecodeError:
+        return loaded
+    except (json.JSONDecodeError, KeyError, ValueError, TypeError):
         print("Warning: Inventory file is corrupted. Starting with an empty inventory.")
-        return []
+        return inventory
+
 
 def save_inventory(inventory, filename=inventory_file):
     try:
         with open(filename, "w", encoding="utf-8") as file:
-            json.dump(inventory, file, indent=4)
+            json.dump(inventory.to_list(), file, indent=4)
         print(f"Inventory saved successfully to {filename}.")
         return True
     except OSError as error:
@@ -30,24 +39,6 @@ def save_inventory(inventory, filename=inventory_file):
         return False
 
 # Menu Actions
-def find_product(inventory, item_id):
-    for product in inventory:
-        if product["id"].lower() == item_id.lower():
-            return product
-    return None
-
-def display_all(inventory):
-    print("\nCurrent Inventory")
-    print("-" * 48)
-    if not inventory:
-        print("Inventory is empty.")
-    else:
-        for p in inventory:
-            print(f"ID: {p['id']} | Name: {p['name']} | "
-                  f"Price: ${p['price']:.2f} | Stock: {p['stock']}")
-    print("-" * 48)
-
-
 def add_product(inventory):
     print("\nAdd New Product")
 
@@ -55,7 +46,7 @@ def add_product(inventory):
         item_id = input("Product ID: ").strip()
         if not item_id:
             print("Product ID Cannot Be Empty")
-        elif find_product(inventory, item_id):
+        elif inventory.search_product(item_id):
             print("Product ID Already Exists")
         else:
             break
@@ -74,7 +65,7 @@ def add_product(inventory):
             print("Price Cannot Be Negative")
         except ValueError:
             print("Please Enter A Valid Number")
-b
+
     while True:
         try:
             stock_quantity = int(input("Stock Quantity: ").strip())
@@ -84,58 +75,51 @@ b
         except ValueError:
             print("Please Enter An Integer")
 
-    inventory.append({
-        "id": item_id,
-        "name": item_name,
-        "price": item_price,
-        "stock": stock_quantity,
-    })
+    product = Product(item_id, item_name, item_price, stock_quantity)
+    inventory.add_product(product)
     print("Product added successfully")
+
 
 def update_stock(inventory):
     print("\nUpdate Stock")
     item_id = input("Enter Product ID: ").strip()
-    product = find_product(inventory, item_id)
+    product = inventory.search_product(item_id)
 
     if product is None:
         print("Product not found.")
         return
 
     print("Product Found:")
-    print(f"Name: {product['name']}")
-    print(f"Current Stock: {product['stock']}")
+    print(f"Name: {product.name}")
+    print(f"Current Stock: {product.stock}")
 
     while True:
         try:
             new_stock = int(input("New Stock Quantity: ").strip())
-            if new_stock >= 0:
-                break
-            print("Stock Cannot Be Negative")
-        except ValueError:
-            print("Please Enter An Integer")
+            product.update_stock(new_stock)
+            break
+        except ValueError as error:
+            # Covers both non-integer input and the Product's own validation
+            print(error if "negative" in str(error) else "Please Enter An Integer")
 
-    product["stock"] = new_stock
     print("Stock updated successfully!")
+
 
 def search_product(inventory):
     print("\nSearch Product")
     item_id = input("Enter Product ID: ").strip()
-    product = find_product(inventory, item_id)
+    product = inventory.search_product(item_id)
 
     if product is None:
         print("Product not found.")
         return
 
     print("Product Found")
-    print("-" * 48)
-    print(f"ID: {product['id']}")
-    print(f"Name: {product['name']}")
-    print(f"Price: ${product['price']:.2f}")
-    print(f"Stock: {product['stock']}")
-    print("-" * 48)
+    product.display_information()
+
 
 def main_menu():
-    print("\n" + "-" * 11 , " MENU " , "-" * 11)
+    print("\n" + "-" * 11, " MENU ", "-" * 11)
     print("1. Display All Products")
     print("2. Add Product")
     print("3. Update Stock")
@@ -143,6 +127,7 @@ def main_menu():
     print("5. Save Inventory")
     print("6. Exit")
     print("-" * 28)
+
 
 def main():
     print("=" * 40)
@@ -156,7 +141,7 @@ def main():
         option = input("\nEnter option: ").strip()
 
         if option == "1":
-            display_all(inventory)
+            inventory.display_all()
         elif option == "2":
             add_product(inventory)
         elif option == "3":
@@ -174,6 +159,7 @@ def main():
             break
         else:
             print("Invalid option. Please enter a number from 1 to 6.")
+
 
 if __name__ == "__main__":
     main()
