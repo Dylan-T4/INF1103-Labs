@@ -3,6 +3,7 @@ import os
 
 inventory_file = "inventory.json"
 
+# File Handling
 def load_inventory(filename=inventory_file):
     if not os.path.exists(filename):
         print(f"{filename} not found. Starting with an empty inventory.")
@@ -28,6 +29,7 @@ def save_inventory(inventory, filename=inventory_file):
         print(f"Error saving inventory: {error}")
         return False
 
+# Menu Actions
 def find_product(inventory, item_id):
     for product in inventory:
         if product["id"].lower() == item_id.lower():
@@ -72,7 +74,7 @@ def add_product(inventory):
             print("Price Cannot Be Negative")
         except ValueError:
             print("Please Enter A Valid Number")
-
+b
     while True:
         try:
             stock_quantity = int(input("Stock Quantity: ").strip())
