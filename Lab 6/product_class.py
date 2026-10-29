@@ -32,9 +32,9 @@ class Product:
 
     def update_stock(self, quantity):
         if not isinstance(quantity, int) or isinstance(quantity, bool):
-            raise ValueError("Stock quantity must be an integer.")
+            raise ValueError("Stock must be an integer.")
         if quantity < 0:
-            raise ValueError("Stock quantity cannot be negative.")
+            raise ValueError("Stock cannot be negative.")
         self.__stock = quantity
 
     def display_information(self):

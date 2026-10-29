@@ -6,7 +6,6 @@ from inventory_class import Inventory
 
 inventory_file = "inventory.json"
 
-# File Loading/Saving
 def load_inventory(filename=inventory_file):
     inventory = Inventory()
 
@@ -20,7 +19,8 @@ def load_inventory(filename=inventory_file):
             data = json.load(file)
         loaded = Inventory()
         for item in data:
-            loaded.add_product(Product.from_dict(item))
+            if not loaded.add_product(Product.from_dict(item)):
+                print(f"Warning: duplicate ID '{item['id']}' in file was skipped.")
         print("Inventory loaded successfully.")
         return loaded
     except (json.JSONDecodeError, KeyError, ValueError, TypeError):
@@ -38,7 +38,7 @@ def save_inventory(inventory, filename=inventory_file):
         print(f"Error saving inventory: {error}")
         return False
 
-# Menu Actions
+
 def add_product(inventory):
     print("\nAdd New Product")
 
@@ -96,11 +96,15 @@ def update_stock(inventory):
     while True:
         try:
             new_stock = int(input("New Stock Quantity: ").strip())
-            product.update_stock(new_stock)
+        except ValueError:
+            print("Please Enter An Integer")
+            continue
+
+        try:
+            product.update_stock(new_stock)  # Product validates its own state
             break
         except ValueError as error:
-            # Covers both non-integer input and the Product's own validation
-            print(error if "negative" in str(error) else "Please Enter An Integer")
+            print(error)
 
     print("Stock updated successfully!")
 
