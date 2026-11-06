@@ -1,10 +1,27 @@
 import json
 import os
 
-from product_class import Product
 from inventory_class import Inventory
+from physical_product_class import PhysicalProduct
+from digital_product_class import DigitalProduct
+from can_be_shipped_class import CanBeShipped
 
 inventory_file = "inventory.json"
+
+PRODUCT_TYPES = {
+    "physical": PhysicalProduct,
+    "digital": DigitalProduct,
+}
+
+
+# ---------- File Handling ----------
+def create_product_from_dict(data):
+    product_type = str(data["type"]).lower()
+    product_class = PRODUCT_TYPES.get(product_type)
+    if product_class is None:
+        raise ValueError(f"Unknown product type '{product_type}'.")
+    return product_class.from_dict(data)
+
 
 def load_inventory(filename=inventory_file):
     inventory = Inventory()
@@ -17,15 +34,23 @@ def load_inventory(filename=inventory_file):
     try:
         with open(filename, "r", encoding="utf-8") as file:
             data = json.load(file)
-        loaded = Inventory()
-        for item in data:
-            if not loaded.add_product(Product.from_dict(item)):
-                print(f"Warning: duplicate ID '{item['id']}' in file was skipped.")
-        print("Inventory loaded successfully.")
-        return loaded
-    except (json.JSONDecodeError, KeyError, ValueError, TypeError):
+        if not isinstance(data, list):
+            raise TypeError("Inventory data must be a list.")
+    except (json.JSONDecodeError, TypeError, OSError):
         print("Warning: Inventory file is corrupted. Starting with an empty inventory.")
         return inventory
+
+    for item in data:
+        try:
+            product = create_product_from_dict(item)
+        except (KeyError, ValueError, TypeError):
+            print(f"Warning: skipped an invalid entry: {item}")
+            continue
+        if not inventory.add_product(product):
+            print(f"Warning: duplicate ID '{product.product_id}' in file was skipped.")
+
+    print("Inventory loaded successfully.")
+    return inventory
 
 
 def save_inventory(inventory, filename=inventory_file):
@@ -39,8 +64,30 @@ def save_inventory(inventory, filename=inventory_file):
         return False
 
 
+# ---------- Input Helpers ----------
+def ask_positive_float(prompt, label):
+    while True:
+        try:
+            value = float(input(prompt))
+            if value > 0:
+                return value
+            print(f"{label} Must Be Greater Than 0")
+        except ValueError:
+            print("Please Enter A Valid Number")
+
+
+# ---------- Menu Actions ----------
 def add_product(inventory):
     print("\nAdd New Product")
+
+    while True:
+        print("Product Type:")
+        print("1. Physical Product")
+        print("2. Digital Product")
+        product_type = input("Choose type (1/2): ").strip()
+        if product_type in ("1", "2"):
+            break
+        print("Please Enter 1 or 2")
 
     while True:
         item_id = input("Product ID: ").strip()
@@ -75,7 +122,13 @@ def add_product(inventory):
         except ValueError:
             print("Please Enter An Integer")
 
-    product = Product(item_id, item_name, item_price, stock_quantity)
+    if product_type == "1":
+        weight = ask_positive_float("Weight (kg): ", "Weight")
+        product = PhysicalProduct(item_id, item_name, item_price, stock_quantity, weight)
+    else:
+        size = ask_positive_float("Download Size (MB): ", "Download Size")
+        product = DigitalProduct(item_id, item_name, item_price, stock_quantity, size)
+
     inventory.add_product(product)
     print("Product added successfully")
 
@@ -101,7 +154,7 @@ def update_stock(inventory):
             continue
 
         try:
-            product.update_stock(new_stock)  # Product validates its own state
+            product.update_stock(new_stock)
             break
         except ValueError as error:
             print(error)
@@ -119,7 +172,12 @@ def search_product(inventory):
         return
 
     print("Product Found")
-    product.display_information()
+    print("-" * 48)
+    product.display_information()          # overridden by each subclass
+    print(f"Fulfilment: {product.get_fulfilment_info()}")
+    if isinstance(product, CanBeShipped):  # only shippable products
+        print(f"Shipping Cost: ${product.calculate_shipping_cost():.2f}")
+    print("-" * 48)
 
 
 def main_menu():
