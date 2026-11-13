@@ -1,25 +1,34 @@
 from product_class import Product
 
-
 class Inventory:
-    def __init__(self):
-        self.__products = []
+    def __init__(self) -> None:
+        self.__products: list[Product] = []
 
-    def add_product(self, product):
+    @property
+    def products(self) -> list[Product]:
+        return list(self.__products)
+
+    def add_product(self, product: Product) -> bool:
         if not isinstance(product, Product):
             raise TypeError("Only Product objects can be added to the inventory.")
-        if self.search_product(product.product_id) is not None:
+        if self.find_product(product.product_id) is not None:
             return False
         self.__products.append(product)
         return True
 
-    def search_product(self, item_id):
+    def remove_product(self, product_id: str) -> Product | None:
+        product = self.find_product(product_id)
+        if product is not None:
+            self.__products.remove(product)
+        return product
+
+    def find_product(self, product_id: str) -> Product | None:
         for product in self.__products:
-            if product.product_id.lower() == item_id.strip().lower():
+            if product.product_id.lower() == product_id.strip().lower():
                 return product
         return None
 
-    def display_all(self):
+    def display_all(self) -> None:
         print("\nCurrent Inventory")
         print("-" * 48)
         if not self.__products:
@@ -29,5 +38,10 @@ class Inventory:
                 print(product)
         print("-" * 48)
 
-    def to_list(self):
+    def display_all_products(self) -> None:
+        for product in self.__products:
+            product.display_information()
+            print("-" * 48)
+
+    def to_list(self) -> list[dict]:
         return [product.to_dict() for product in self.__products]

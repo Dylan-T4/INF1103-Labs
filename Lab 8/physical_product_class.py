@@ -7,7 +7,7 @@ class PhysicalProduct(Product, CanBeShipped):
     BASE_SHIPPING = 5.00
     COST_PER_KG = 2.00
 
-    def __init__(self, product_id: str, name: str, price: float, stock: int, weight: float, supplier: Supplier):
+    def __init__(self, product_id: str, name: str, price: float, stock: int, supplier: Supplier, weight: float):
         super().__init__(product_id, name, price, stock, supplier)
         weight = float(weight)
         if weight <= 0:
