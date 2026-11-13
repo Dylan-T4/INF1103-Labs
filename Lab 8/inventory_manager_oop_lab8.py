@@ -78,7 +78,6 @@ def ask_positive_float(prompt: str, label: str) -> float:
 
 
 def ask_supplier(inventory: Inventory) -> Supplier:
-    """Reuse an existing Supplier object if its ID is already known, else create one."""
     while True:
         supplier_id = input("Supplier ID: ").strip()
         if supplier_id:
@@ -226,6 +225,34 @@ def remove_product(inventory: Inventory) -> None:
     print("Product removed from inventory.")
 
 
+def find_order(orders: list[Order], order_id: str) -> Order | None:
+    for order in orders:
+        if order.order_id.lower() == order_id.strip().lower():
+            return order
+    return None
+
+
+def add_line_to_order(inventory: Inventory, order: Order, item_id: str) -> None:
+    product = inventory.find_product(item_id)
+    if product is None:
+        print("Product not found.")
+        return
+
+    while True:
+        try:
+            quantity = int(input(f"Quantity of {product.name}: ").strip())
+        except ValueError:
+            print("Please Enter An Integer")
+            continue
+        try:
+            order.add_order_line(product, quantity)
+            break
+        except ValueError as error:
+            print(error)
+
+    print(f"Added {quantity} x {product.name}.")
+
+
 def create_order(inventory: Inventory, orders: list[Order]) -> None:
     print("\nCreate Order")
 
@@ -237,7 +264,7 @@ def create_order(inventory: Inventory, orders: list[Order]) -> None:
         order_id = input("Order ID: ").strip()
         if not order_id:
             print("Order ID Cannot Be Empty")
-        elif any(o.order_id.lower() == order_id.lower() for o in orders):
+        elif find_order(orders, order_id) is not None:
             print("Order ID Already Exists")
         else:
             break
@@ -251,27 +278,66 @@ def create_order(inventory: Inventory, orders: list[Order]) -> None:
                 break
             print("An order needs at least one product.")
             continue
-
-        product = inventory.find_product(item_id)
-        if product is None:
-            print("Product not found.")
-            continue
-
-        while True:
-            try:
-                quantity = int(input(f"Quantity of {product.name}: ").strip())
-                order.add_order_line(product, quantity)   # Order creates the OrderLine
-                break
-            except ValueError as error:
-                print(error if "greater" in str(error) else "Please Enter An Integer")
-
-        print(f"Added {quantity} x {product.name}.")
+        add_line_to_order(inventory, order, item_id)
 
     orders.append(order)
     print("\nOrder created successfully")
     print("-" * 48)
     order.display_order()
     print("-" * 48)
+
+
+def modify_order(inventory: Inventory, orders: list[Order]) -> None:
+    print("\nModify Order")
+
+    if not orders:
+        print("No orders have been created yet.")
+        return
+
+    order = find_order(orders, input("Enter Order ID: "))
+    if order is None:
+        print("Order not found.")
+        return
+
+    while True:
+        print("-" * 48)
+        order.display_order()
+        print("-" * 48)
+        print("1. Add Product")
+        print("2. Remove Product")
+        print("3. Done")
+        choice = input("Choose option: ").strip()
+
+        if choice == "1":
+            item_id = input("Product ID to add: ").strip()
+            add_line_to_order(inventory, order, item_id)
+        elif choice == "2":
+            item_id = input("Product ID to remove: ").strip()
+            if len(order.order_lines) == 1 and any(
+                    line.product.product_id.lower() == item_id.lower()
+                    for line in order.order_lines):
+                print("An order needs at least one product. Add another before removing this one.")
+            elif order.remove_order_line(item_id):
+                print("Product removed from order.")
+            else:
+                print("That product is not in this order.")
+        elif choice == "3":
+            print("Order updated.")
+            break
+        else:
+            print("Please enter 1, 2 or 3.")
+
+
+def view_orders(orders: list[Order]) -> None:
+    print("\nAll Orders")
+    print("-" * 48)
+    if not orders:
+        print("No orders have been created yet.")
+    else:
+        for order in orders:
+            order.display_order()
+            print("-" * 48)
+        print(f"Total orders: {len(orders)}")
 
 
 def main_menu() -> None:
@@ -282,8 +348,10 @@ def main_menu() -> None:
     print("4. Search Product")
     print("5. Remove Product")
     print("6. Create Order")
-    print("7. Save Inventory")
-    print("8. Exit")
+    print("7. Modify Order")
+    print("8. View All Orders")
+    print("9. Save Inventory")
+    print("10. Exit")
     print("-" * 28)
 
 
@@ -312,16 +380,20 @@ def main() -> None:
         elif option == "6":
             create_order(inventory, orders)
         elif option == "7":
+            modify_order(inventory, orders)
+        elif option == "8":
+            view_orders(orders)
+        elif option == "9":
             print("Saving inventory...")
             save_inventory(inventory)
-        elif option == "8":
+        elif option == "10":
             print("Saving inventory before exit...")
             save_inventory(inventory)
             print("Thank you for using Inventory Management System.")
             print("Program terminated.")
             break
         else:
-            print("Invalid option. Please enter a number from 1 to 8.")
+            print("Invalid option. Please enter a number from 1 to 10.")
 
 
 if __name__ == "__main__":
