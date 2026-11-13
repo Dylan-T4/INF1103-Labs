@@ -5,6 +5,7 @@ from inventory_class import Inventory
 from physical_product_class import PhysicalProduct
 from digital_product_class import DigitalProduct
 from can_be_shipped_class import CanBeShipped
+from supplier_class import Supplier
 
 inventory_file = "inventory.json"
 
@@ -15,7 +16,7 @@ PRODUCT_TYPES = {
 
 
 # ---------- File Handling ----------
-def create_product_from_dict(data):
+def create_product_from_dict(data: dict):
     product_type = str(data["type"]).lower()
     product_class = PRODUCT_TYPES.get(product_type)
     if product_class is None:
@@ -23,7 +24,7 @@ def create_product_from_dict(data):
     return product_class.from_dict(data)
 
 
-def load_inventory(filename=inventory_file):
+def load_inventory(filename: str = inventory_file) -> Inventory:
     inventory = Inventory()
 
     if not os.path.exists(filename):
@@ -53,7 +54,7 @@ def load_inventory(filename=inventory_file):
     return inventory
 
 
-def save_inventory(inventory, filename=inventory_file):
+def save_inventory(inventory: Inventory, filename: str = inventory_file):
     try:
         with open(filename, "w", encoding="utf-8") as file:
             json.dump(inventory.to_list(), file, indent=4)
@@ -65,7 +66,7 @@ def save_inventory(inventory, filename=inventory_file):
 
 
 # ---------- Input Helpers ----------
-def ask_positive_float(prompt, label):
+def ask_positive_float(prompt: str, label: str) -> float:
     while True:
         try:
             value = float(input(prompt))
@@ -74,6 +75,26 @@ def ask_positive_float(prompt, label):
             print(f"{label} Must Be Greater Than 0")
         except ValueError:
             print("Please Enter A Valid Number")
+
+def ask_supplier(inventory: Inventory) -> Supplier:
+    while True:
+        supplier_id = input("Supplier ID: ").strip()
+        if supplier_id:
+            break
+        print("Supplier ID Cannot Be Empty")
+ 
+    for product in inventory.products:
+        if product.supplier.supplier_id.lower() == supplier_id.lower():
+            print(f"Existing supplier found: {product.supplier}")
+            return product.supplier
+ 
+    while True:
+        name = input("Supplier Name: ").strip()
+        email = input("Supplier Email: ").strip()
+        try:
+            return Supplier(supplier_id, name, email)
+        except ValueError as error:
+            print(error)
 
 
 # ---------- Menu Actions ----------
@@ -122,12 +143,14 @@ def add_product(inventory):
         except ValueError:
             print("Please Enter An Integer")
 
+    supplier = ask_supplier(inventory)
+
     if product_type == "1":
         weight = ask_positive_float("Weight (kg): ", "Weight")
-        product = PhysicalProduct(item_id, item_name, item_price, stock_quantity, weight)
+        product = PhysicalProduct(item_id, item_name, item_price, stock_quantity, supplier, weight)
     else:
         size = ask_positive_float("Download Size (MB): ", "Download Size")
-        product = DigitalProduct(item_id, item_name, item_price, stock_quantity, size)
+        product = DigitalProduct(item_id, item_name, item_price, stock_quantity, supplier, size)
 
     inventory.add_product(product)
     print("Product added successfully")

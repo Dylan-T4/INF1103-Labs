@@ -1,34 +1,37 @@
 from product_class import Product
+from supplier_class import Supplier
+
 
 class DigitalProduct(Product):
-    def __init__(self, product_id, name, price, stock, download_size):
-        super().__init__(product_id, name, price, stock)
+    def __init__(self, product_id: str, name: str, price: float, stock: int, supplier: Supplier, download_size: float) -> None:
+        super().__init__(product_id, name, price, stock, supplier)
         download_size = float(download_size)
         if download_size <= 0:
             raise ValueError("Download size must be greater than 0.")
-        self.__download_size = download_size
+        self.__download_size: float = download_size
 
     @property
-    def download_size(self):
+    def download_size(self) -> float:
         return self.__download_size
 
-    def get_fulfilment_info(self):
+    def get_fulfilment_info(self) -> str:
         return "Digital product: Delivered digitally via download link."
 
-    def display_information(self):
+    def display_information(self) -> None:
         super().display_information()
         print(f"Download Size: {self.__download_size:.2f} MB")
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         data = super().to_dict()
         data["type"] = "digital"
         data["download_size"] = self.__download_size
         return data
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data: dict) -> "DigitalProduct":
+        supplier = Supplier.from_dict(data["supplier"])
         return cls(data["id"], data["name"], data["price"],
-                   data["stock"], data["download_size"])
+                   data["stock"], supplier, data["download_size"])
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{super().__str__()} | Download Size: {self.__download_size:.2f} MB"
