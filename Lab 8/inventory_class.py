@@ -28,20 +28,15 @@ class Inventory:
                 return product
         return None
 
-    def display_all(self) -> None:
+    def display_all_products(self) -> None:
         print("\nCurrent Inventory")
         print("-" * 48)
         if not self.__products:
             print("Inventory is empty.")
         else:
             for product in self.__products:
-                print(product)
-        print("-" * 48)
-
-    def display_all_products(self) -> None:
-        for product in self.__products:
-            product.display_information()
-            print("-" * 48)
+                product.display_information()
+                print("-" * 48)
 
     def to_list(self) -> list[dict]:
         return [product.to_dict() for product in self.__products]

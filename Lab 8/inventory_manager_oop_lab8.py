@@ -3,6 +3,7 @@ import os
 
 from inventory_class import Inventory
 from supplier_class import Supplier
+from order_class import Order
 from product_class import Product
 from physical_product_class import PhysicalProduct
 from digital_product_class import DigitalProduct
@@ -77,6 +78,7 @@ def ask_positive_float(prompt: str, label: str) -> float:
 
 
 def ask_supplier(inventory: Inventory) -> Supplier:
+    """Reuse an existing Supplier object if its ID is already known, else create one."""
     while True:
         supplier_id = input("Supplier ID: ").strip()
         if supplier_id:
@@ -198,7 +200,7 @@ def search_product(inventory: Inventory) -> None:
 
     print("Product Found")
     print("-" * 48)
-    product.display_information()   
+    product.display_information()
     print(f"Fulfilment: {product.get_fulfilment_info()}")
     if isinstance(product, CanBeShipped):
         print(f"Shipping Cost: ${product.calculate_shipping_cost():.2f}")
@@ -224,6 +226,54 @@ def remove_product(inventory: Inventory) -> None:
     print("Product removed from inventory.")
 
 
+def create_order(inventory: Inventory, orders: list[Order]) -> None:
+    print("\nCreate Order")
+
+    if not inventory.products:
+        print("The inventory is empty. Add products before creating an order.")
+        return
+
+    while True:
+        order_id = input("Order ID: ").strip()
+        if not order_id:
+            print("Order ID Cannot Be Empty")
+        elif any(o.order_id.lower() == order_id.lower() for o in orders):
+            print("Order ID Already Exists")
+        else:
+            break
+
+    order = Order(order_id)
+
+    while True:
+        item_id = input("Product ID to add (or press Enter to finish): ").strip()
+        if not item_id:
+            if order.order_lines:
+                break
+            print("An order needs at least one product.")
+            continue
+
+        product = inventory.find_product(item_id)
+        if product is None:
+            print("Product not found.")
+            continue
+
+        while True:
+            try:
+                quantity = int(input(f"Quantity of {product.name}: ").strip())
+                order.add_order_line(product, quantity)   # Order creates the OrderLine
+                break
+            except ValueError as error:
+                print(error if "greater" in str(error) else "Please Enter An Integer")
+
+        print(f"Added {quantity} x {product.name}.")
+
+    orders.append(order)
+    print("\nOrder created successfully")
+    print("-" * 48)
+    order.display_order()
+    print("-" * 48)
+
+
 def main_menu() -> None:
     print("\n" + "-" * 11, " MENU ", "-" * 11)
     print("1. Display All Products")
@@ -231,8 +281,9 @@ def main_menu() -> None:
     print("3. Update Stock")
     print("4. Search Product")
     print("5. Remove Product")
-    print("6. Save Inventory")
-    print("7. Exit")
+    print("6. Create Order")
+    print("7. Save Inventory")
+    print("8. Exit")
     print("-" * 28)
 
 
@@ -242,13 +293,14 @@ def main() -> None:
     print("=" * 40)
 
     inventory = load_inventory()
+    orders: list[Order] = []
 
     while True:
         main_menu()
         option = input("\nEnter option: ").strip()
 
         if option == "1":
-            inventory.display_all()
+            inventory.display_all_products()
         elif option == "2":
             add_product(inventory)
         elif option == "3":
@@ -258,16 +310,18 @@ def main() -> None:
         elif option == "5":
             remove_product(inventory)
         elif option == "6":
+            create_order(inventory, orders)
+        elif option == "7":
             print("Saving inventory...")
             save_inventory(inventory)
-        elif option == "7":
+        elif option == "8":
             print("Saving inventory before exit...")
             save_inventory(inventory)
             print("Thank you for using Inventory Management System.")
             print("Program terminated.")
             break
         else:
-            print("Invalid option. Please enter a number from 1 to 7.")
+            print("Invalid option. Please enter a number from 1 to 8.")
 
 
 if __name__ == "__main__":
