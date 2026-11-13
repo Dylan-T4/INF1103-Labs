@@ -198,11 +198,30 @@ def search_product(inventory: Inventory) -> None:
 
     print("Product Found")
     print("-" * 48)
-    product.display_information()          # overridden by each subclass
+    product.display_information()   
     print(f"Fulfilment: {product.get_fulfilment_info()}")
-    if isinstance(product, CanBeShipped):  # only shippable products
+    if isinstance(product, CanBeShipped):
         print(f"Shipping Cost: ${product.calculate_shipping_cost():.2f}")
     print("-" * 48)
+
+
+def remove_product(inventory: Inventory) -> None:
+    print("\nRemove Product")
+    item_id = input("Enter Product ID: ").strip()
+    product = inventory.find_product(item_id)
+
+    if product is None:
+        print("Product not found.")
+        return
+
+    print(f"Product Found: {product}")
+    confirm = input("Remove this product from the inventory? (y/n): ").strip().lower()
+    if confirm != "y":
+        print("Removal cancelled.")
+        return
+
+    inventory.remove_product(product.product_id)
+    print("Product removed from inventory.")
 
 
 def main_menu() -> None:
@@ -211,8 +230,9 @@ def main_menu() -> None:
     print("2. Add Product")
     print("3. Update Stock")
     print("4. Search Product")
-    print("5. Save Inventory")
-    print("6. Exit")
+    print("5. Remove Product")
+    print("6. Save Inventory")
+    print("7. Exit")
     print("-" * 28)
 
 
@@ -236,16 +256,18 @@ def main() -> None:
         elif option == "4":
             search_product(inventory)
         elif option == "5":
+            remove_product(inventory)
+        elif option == "6":
             print("Saving inventory...")
             save_inventory(inventory)
-        elif option == "6":
+        elif option == "7":
             print("Saving inventory before exit...")
             save_inventory(inventory)
             print("Thank you for using Inventory Management System.")
             print("Program terminated.")
             break
         else:
-            print("Invalid option. Please enter a number from 1 to 6.")
+            print("Invalid option. Please enter a number from 1 to 7.")
 
 
 if __name__ == "__main__":
