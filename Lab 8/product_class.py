@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod 
+from supplier_class import Supplier
 
 class Product(ABC):
     def __init__(self, product_id, name, price, stock):
