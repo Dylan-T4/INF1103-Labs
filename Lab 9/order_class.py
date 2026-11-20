@@ -1,14 +1,20 @@
+from discount_strategy_class import DiscountStrategy
+from no_discount_class import NoDiscount
 from order_line_class import OrderLine
 from product_class import Product
 
+
 class Order:
 
-    def __init__(self, order_id: str) -> None:
+    def __init__(self, order_id: str, discount: DiscountStrategy | None = None) -> None:
         order_id = str(order_id).strip()
         if not order_id:
             raise ValueError("Order ID cannot be empty.")
         self.__order_id: str = order_id
         self.__order_lines: list[OrderLine] = []
+        self.__discount: DiscountStrategy = NoDiscount()
+        if discount is not None:
+            self.set_discount(discount)
 
     @property
     def order_id(self) -> str:
@@ -17,6 +23,15 @@ class Order:
     @property
     def order_lines(self) -> tuple[OrderLine, ...]:
         return tuple(self.__order_lines)
+
+    @property
+    def discount(self) -> DiscountStrategy:
+        return self.__discount
+
+    def set_discount(self, discount: DiscountStrategy) -> None:
+        if not isinstance(discount, DiscountStrategy):
+            raise TypeError("Discount must be a valid discount.")
+        self.__discount = discount
 
     def add_order_line(self, product: Product, quantity: int) -> None:
         for index, line in enumerate(self.__order_lines):
@@ -32,11 +47,16 @@ class Order:
                 return True
         return False
 
-    def calculate_total(self) -> float:
+    def calculate_subtotal(self) -> float:
         return sum(line.calculate_subtotal() for line in self.__order_lines)
+
+    def calculate_total(self) -> float:
+        return self.__discount.apply(self.calculate_subtotal())
 
     def display_order(self) -> None:
         print(f"Order {self.__order_id}")
         for line in self.__order_lines:
             print(f"  {line}")
+        print(f"  Subtotal: ${self.calculate_subtotal():.2f}")
+        print(f"  Discount: {self.__discount}")
         print(f"  Total: ${self.calculate_total():.2f}")
