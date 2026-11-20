@@ -37,6 +37,3 @@ class Inventory:
             for product in self.__products:
                 product.display_information()
                 print("-" * 48)
-
-    def to_list(self) -> list[dict]:
-        return [product.to_dict() for product in self.__products]

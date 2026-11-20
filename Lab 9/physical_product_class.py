@@ -28,17 +28,10 @@ class PhysicalProduct(Product, CanBeShipped):
         super().display_information()
         print(f"Weight: {self.__weight:.2f} kg")
 
-    def to_dict(self):
-        data = super().to_dict()
-        data["type"] = "physical"
-        data["weight"] = self.__weight
-        return data
-
-    @classmethod
-    def from_dict(cls, data: dict):
-        supplier = Supplier.from_dict(data["supplier"])
-        return cls(data["id"], data["name"], data["price"],
-                   data["stock"], supplier, data["weight"])
+    def to_csv_row(self) -> list:
+        return ["physical", self.product_id, self.name, self.price, self.stock,
+                self.__weight, self.supplier.supplier_id, self.supplier.name,
+                self.supplier.contact_email]
 
     def __str__(self):
         return f"{super().__str__()} | Weight: {self.__weight:.2f} kg"

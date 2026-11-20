@@ -24,13 +24,3 @@ class ProductFactory:
             return DigitalProduct(product_id, name, price, stock_quantity, supplier, size)
         else:
             raise ValueError(f"Unknown product type: {product_type}")
-
-    @staticmethod
-    def create_from_dict(data: dict) -> Product:
-        kind = str(data["type"]).strip().lower()
-        if kind == "physical":
-            return PhysicalProduct.from_dict(data)
-        elif kind == "digital":
-            return DigitalProduct.from_dict(data)
-        else:
-            raise ValueError(f"Unknown product type: {data['type']}")

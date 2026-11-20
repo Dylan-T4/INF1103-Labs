@@ -32,16 +32,5 @@ class Supplier:
         print(f"Supplier Name: {self.__name}")
         print(f"Supplier Email: {self.__contact_email}")
 
-    def to_dict(self) -> dict:
-        return {
-            "supplier_id": self.__supplier_id,
-            "name": self.__name,
-            "contact_email": self.__contact_email,
-        }
-
-    @classmethod
-    def from_dict(cls, data: dict) -> "Supplier":
-        return cls(data["supplier_id"], data["name"], data["contact_email"])
-
     def __str__(self) -> str:
         return f"{self.__name} ({self.__supplier_id}) <{self.__contact_email}>"

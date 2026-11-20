@@ -251,13 +251,7 @@ def save_inventory(inventory: Inventory, filename: str = inventory_file) -> bool
             writer = csv.writer(file)
             writer.writerow(CSV_HEADER)
             for product in inventory.products:
-                data = product.to_dict()
-                supplier = data["supplier"]
-                specific_value = data.get("weight", data.get("download_size", ""))
-                writer.writerow([data["type"], data["id"], data["name"],
-                                 data["price"], data["stock"], specific_value,
-                                 supplier["supplier_id"], supplier["name"],
-                                 supplier["contact_email"]])
+                writer.writerow(product.to_csv_row())
         print(f"Inventory saved successfully to {filename}.")
         return True
     except OSError as error:
@@ -280,7 +274,7 @@ def choose_discount() -> DiscountStrategy:
     while True:
         print("Discount:")
         print("1. No discount")
-        print("2. Percentage discount (%)")
+        print("2. Percentage discount")
         print("3. Bulk discount")
         print("4. Student discount (5%)")
         choice = input("Choose discount (1-4): ").strip()

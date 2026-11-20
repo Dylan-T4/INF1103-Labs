@@ -21,17 +21,10 @@ class DigitalProduct(Product):
         super().display_information()
         print(f"Download Size: {self.__download_size:.2f} MB")
 
-    def to_dict(self) -> dict:
-        data = super().to_dict()
-        data["type"] = "digital"
-        data["download_size"] = self.__download_size
-        return data
-
-    @classmethod
-    def from_dict(cls, data: dict) -> "DigitalProduct":
-        supplier = Supplier.from_dict(data["supplier"])
-        return cls(data["id"], data["name"], data["price"],
-                   data["stock"], supplier, data["download_size"])
+    def to_csv_row(self) -> list:
+        return ["digital", self.product_id, self.name, self.price, self.stock,
+                self.__download_size, self.supplier.supplier_id, self.supplier.name,
+                self.supplier.contact_email]
 
     def __str__(self) -> str:
         return f"{super().__str__()} | Download Size: {self.__download_size:.2f} MB"

@@ -63,14 +63,9 @@ class Product(ABC):
         print(f"Stock: {self.__stock}")
         self.__supplier.display_information()
 
-    def to_dict(self) -> dict:
-        return {
-            "id": self.__product_id,
-            "name": self.__name,
-            "price": self.__price,
-            "stock": self.__stock,
-            "supplier": self.__supplier.to_dict(),
-        }
+    @abstractmethod
+    def to_csv_row(self) -> list:
+        pass
 
     def __str__(self) -> str:
         return (f"ID: {self.__product_id} | Name: {self.__name} | "
