@@ -1,3 +1,4 @@
+import math
 from abc import ABC, abstractmethod
 from supplier_class import Supplier
 
@@ -6,15 +7,18 @@ class Product(ABC):
                  stock: int, supplier: Supplier) -> None:
         self.__product_id: str = str(product_id).strip()
         self.__name: str = str(name).strip()
-        self.__price: float = float(price)
+        try:
+            self.__price: float = float(price)
+        except (TypeError, ValueError):
+            raise ValueError("Price must be a number.") from None
         self.__stock: int = 0
 
         if not self.__product_id:
             raise ValueError("Product ID cannot be empty.")
         if not self.__name:
             raise ValueError("Product name cannot be empty.")
-        if self.__price < 0:
-            raise ValueError("Price cannot be negative.")
+        if not math.isfinite(self.__price) or self.__price <= 0:
+            raise ValueError("Price must be greater than zero.")
         if not isinstance(supplier, Supplier):
             raise TypeError("Supplier must be a Supplier object.")
 
