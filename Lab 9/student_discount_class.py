@@ -2,8 +2,6 @@ from discount_strategy_class import DiscountStrategy
 
 
 class StudentDiscount(DiscountStrategy):
-    """Fourth strategy: added without changing Order at all."""
-
     RATE: float = 5.0
 
     def apply(self, total: float) -> float:

@@ -18,12 +18,9 @@ inventory_file = "products.csv"
 CSV_HEADER = ["product_type", "product_id", "name", "price", "stock_quantity",
               "weight_or_size", "supplier_id", "supplier_name", "supplier_email"]
 
-# Used only for CSV rows that do not include supplier columns
-# (e.g. the lab's products.csv, which has just 5 columns).
 DEFAULT_SUPPLIER = Supplier("UNKNOWN", "Unknown Supplier", "unknown@example.com")
 
 def get_positive_float(prompt: str) -> float:
-    """Keep asking until the user enters a number greater than zero."""
     while True:
         try:
             value = float(input(prompt))
@@ -180,12 +177,6 @@ def remove_product(inventory: Inventory) -> None:
 
 
 def create_product_from_row(row: list[str], default_supplier: Supplier) -> Product:
-    """Build one product from a CSV row. Raises ValueError with a clear message.
-
-    Columns: product_type, product_id, name, price, stock_quantity,
-    then optionally weight_or_size, supplier_id, supplier_name, supplier_email.
-    If the supplier columns are missing or blank, default_supplier is used.
-    """
     if len(row) < 5:
         raise ValueError("expected at least 5 columns "
                          "(product_type, product_id, name, price, stock_quantity)")
@@ -249,14 +240,12 @@ def load_products(path: str, inventory: Inventory, supplier: Supplier) -> None:
 
 
 def load_inventory(filename: str = inventory_file) -> Inventory:
-    """Start-up load: read the CSV file into a new Inventory using load_products()."""
     inventory = Inventory()
     load_products(filename, inventory, DEFAULT_SUPPLIER)
     return inventory
 
 
 def save_inventory(inventory: Inventory, filename: str = inventory_file) -> bool:
-    """Write every product to a CSV file (with a header row)."""
     try:
         with open(filename, "w", newline="", encoding="utf-8") as file:
             writer = csv.writer(file)
@@ -288,11 +277,10 @@ def import_products(inventory: Inventory) -> None:
 
 
 def choose_discount() -> DiscountStrategy:
-    """Menu helper: turn the user's choice into a strategy object."""
     while True:
         print("Discount:")
         print("1. No discount")
-        print("2. Percentage discount")
+        print("2. Percentage discount (%)")
         print("3. Bulk discount")
         print("4. Student discount (5%)")
         choice = input("Choose discount (1-4): ").strip()
